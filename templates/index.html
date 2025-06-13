@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MacBot Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+  function sendMessage() {
+    const userInput = document.getElementById("userInput");
+    const userText = userInput.value;
+    if (!userText.trim()) return;
+
+    fetch("/get?msg=" + encodeURIComponent(userText))
+      .then((response) => response.text())
+      .then((botReply) => {
+        const chatbox = document.getElementById("chatbox");
+        chatbox.innerHTML += `
+          <div class="w-full max-w-3xl mx-auto px-4 py-2">
+            <div class="flex justify-end">
+              <div class="bg-green-500 text-white px-4 py-2 rounded-lg max-w-[75%]">${userText}</div>
+            </div>
+          </div>
+          <div class="w-full max-w-3xl mx-auto px-4 py-2">
+            <div class="flex justify-start">
+              <div class="bg-gray-700 text-white px-4 py-2 rounded-lg max-w-[75%]">${botReply}</div>
+            </div>
+          </div>
+        `;
+        localStorage.setItem("macbot_chat", chatbox.innerHTML); // Save to localStorage
+        chatbox.scrollTop = chatbox.scrollHeight;
+        userInput.value = "";
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const chatbox = document.getElementById("chatbox");
+    const userInput = document.getElementById("userInput");
+
+    // Restore previous chat from localStorage
+    const savedChat = localStorage.getItem("macbot_chat");
+    if (savedChat) {
+      chatbox.innerHTML = savedChat;
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    // Enter key sends message
+    userInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  });
+</script>
+
+  </head>
+  <body class="bg-gray-900 text-gray-100 h-screen flex flex-col">
+    <header class="w-full bg-gray-800 py-4 px-6 border-b border-gray-700">
+      <h1 class="text-xl font-semibold text-center text-white">
+        MacBot <span class="text-green-400">Chat</span>
+      </h1>
+    </header>
+    <main id="chatbox" class="flex-grow overflow-y-auto py-4 space-y-2 bg-gray-900"></main>
+    <footer class="bg-gray-800 border-t border-gray-700 p-4">
+      <div class="flex max-w-3xl mx-auto w-full">
+        <input
+          id="userInput"
+          type="text"
+          placeholder="Send a message..."
+          class="flex-grow px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-l-lg focus:outline-none focus:ring focus:ring-green-400"
+        />
+        <button
+          onclick="sendMessage()"
+          class="bg-green-500 text-white px-6 py-2 rounded-r-lg hover:bg-green-600"
+        >
+          Send
+        </button>
+      </div>
+    </footer>
+  </body>
+</html>
